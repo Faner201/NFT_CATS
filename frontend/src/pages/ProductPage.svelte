@@ -25,7 +25,7 @@
     <img src={getImage(product.image)} alt="" class="image" />
     <div class="block">
         <div class="name">{product.name}</div>
-        <button class="author" on:click={() => navigate(`/users/id=${product.authorId}`)}>
+        <button class="author" on:click={() => navigate(`/profile/id=${product.authorId}`)}>
             <img src={getImage(product.authorImage)} alt="" class="author-image">
             <div class="author-name">{product.authorName}</div>
         </button>

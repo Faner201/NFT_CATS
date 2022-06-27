@@ -27,7 +27,7 @@ def json_login():
 
 def default_image():
     index = randint(1,10)
-    image =  url_for('static', filename = 'default/' + index + ".jpg")
+    image =  url_for('static', filename = 'default/' + str(index) + ".jpeg")
     return image
 
 
@@ -35,7 +35,7 @@ def default_image():
 @app.route("/registration", methods = ['POST'])
 def json_register():
     request_data = request.get_json()
-    new_user = User(email = request_data['email'], username = request_data['login'])
+    new_user = User(email = request_data['email'], username = request_data['login'], img_name = default_image())
     new_user.set_password(request_data['password'])
     new_user.check_password(request_data['repeatPassword'])
     if(User.query.filter_by(username = request_data['login']).first() is not None):
@@ -153,20 +153,6 @@ def account(id):
         "email" : user.email,
         "image" : user.img_name,
         "nfts" : id
-    })
-
-
-
-@app.route("/store/<int:nft_id>", methods = ['GET'])
-def nft(nft_id):
-    nft = NFT.query.get_or_404(nft_id)
-    return jsonify({
-        "imagePath" : nft.productImage,
-        "name" : nft.productName,
-        "description" : nft.description,
-        "price" : nft.price,
-        "authorName" : nft.authorName.username,
-        "authorImagePath" : nft.authorName.img_name
     })
 
 
