@@ -26,8 +26,8 @@ def json_login():
 
 
 def default_image():
-    index = randint(1,10)
-    image =  url_for('static', filename = 'default/' + str(index) + ".jpeg")
+    index = randint(1,8)
+    image =  url_for('static', filename = 'default/' + str(index) + ".png")
     return image
 
 
