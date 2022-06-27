@@ -1,10 +1,8 @@
-from flask import flash, redirect, render_template, request, send_file, session, url_for, jsonify
-from flask_login import login_user, current_user, logout_user, login_required
-from flask_mail import Message
-from itsdangerous import SignatureExpired
+from flask import redirect, render_template, request, url_for, jsonify
+from flask_login import logout_user
 from models import User, NFT, photo_processing
-from forms import LoginForm, RegisterForm, UpdateAccountForm, NftForm, RequestResetForm, ResetPasswordForm
-from App import app, db, login_manager, mail, serializer
+from App import app, db, login_manager
+from random import randint
 
 @app.route("/")
 def home():
@@ -24,25 +22,27 @@ def json_login():
         return jsonify({"answer" : "loginError"})
     if(user.check_password(request_data['password']) is not True):
         return jsonify({"answer" : "passwordError"})
-    return jsonify({"answer" : "done"})
+    return jsonify({"answer" : user.id})
+
+
+def default_image():
+    index = randint(1,10)
+    image =  url_for('static', filename = 'default/' + index + ".jpg")
+    return image
 
 
 
 @app.route("/registration", methods = ['POST'])
 def json_register():
     request_data = request.get_json()
-    new_user = User(email = request_data['email'], username = request_data['login'])
+    new_user = User(email = request_data['email'], username = request_data['login'], img_name = default_image())
     new_user.set_password(request_data['password'])
     new_user.check_password(request_data['repeatPassword'])
     if(User.query.filter_by(username = request_data['login']).first() is not None):
         return jsonify({"answer" : "loginError"})
     if(User.query.filter_by(email = request_data['email']).first() is not None):
         return jsonify({"answer" : "emailError"})
-    # token = serializer.dumps(request_data['email'], salt = 'email-confirm')
-    # message = Message('Confirm Email', sender = 'ngorbunova41654@gmail.com', recipients = request_data['email'])
-    # link = url_for('verification', token = token, external = True)
-    # message.body = 'Your link is {}'.format(link)
-    # mail.send(message)
+    # new_user.verefication_email_token(request_data['email'])
     db.session.add(new_user)
     db.session.commit()
     return jsonify({"answer" : "done"})
@@ -50,26 +50,20 @@ def json_register():
 
 # @app.route('/verification/<token>')
 # def confirm_email(token):
-#     request_data = request.get_json()
-#     user = session.query(User).get(request_data['id'])
+#     user = User.query.filter_by(token = token).first()
 #     try:
-#         request_data['email'] = serializer.loads(token, salt = 'email-confirm', max_age = 120)
+#         user.email = serializer.loads(token, salt = 'email-confirm', max_age = 120)
 #     except SignatureExpired:
 #         return jsonify({"answer" : "verificationError"})
 #     user.verification = True
+#     db.session.flush()
 #     db.session.commit()
 #     return jsonify({"answer" : "done"})
 
 
-@app.route('/date')
-def get_current():
-    users = NFT.query.all()[0]
-    return jsonify(users)
-
-
 @app.route("/store/id=<int:id>")
 def shop(id):
-    nft = NFT.query.order_by(NFT.date_creator.desc())[id]
+    nft = NFT.query.filter_by(id = id).first()
     product = {
         "id" : nft.id,
         "name" : nft.productName,
@@ -105,6 +99,7 @@ def account_settings():
         image = url_for('static', filename = 'img/' + photo_processing(form_image))
         author.general_information = form["generalInformation"]
         author.img_name = image
+        db.session.flush()
         db.session.commit()
         return jsonify({"answer" : "done"})
     elif request.method == 'GET':
@@ -127,7 +122,7 @@ def new_nft():
         return jsonify({"answer" : "priceError"})
 
     image =  url_for('static', filename = 'img/' + photo_processing(form_image))
-    author = User.query.filter_by(username = form["authorName"]).first()
+    author = User.query.filter_by(id = form["author"]).first()
     new_nft = NFT(productImage = image, productName = form["name"], description = form['description'],
     price = form['price'], authorName = author, ownerName = author)
 
@@ -135,8 +130,25 @@ def new_nft():
     db.session.commit()
     return jsonify({"answer":"done"})
 
+
+@app.route("/profile/id=<int:id>")
+def account(id):
+    user = User.query.filter_by(id = id).first()
+    nfts = NFT.query.filter_by(authorName_id = id).all()
+    id = []
+    for nft in nfts:
+        id.append(nft.id)
+    return jsonify({
+        "name" : user.username,
+        "email" : user.email,
+        "image" : user.img_name,
+        "nfts" : id
+    })
+
+
+
 @app.route("/store/<int:nft_id>", methods = ['GET'])
-def nft(nft_id): # может быть ты json-ом будешь кидать мне id nft?
+def nft(nft_id):
     nft = NFT.query.get_or_404(nft_id)
     return jsonify({
         "imagePath" : nft.productImage,
@@ -146,55 +158,47 @@ def nft(nft_id): # может быть ты json-ом будешь кидать 
         "authorName" : nft.authorName.username,
         "authorImagePath" : nft.authorName.img_name
     })
-    # nft = NFT.query.get_or_404(nft_id)
-    # return render_template('nft.html', title = nft.name, nft = nft)
 
 
-@app.route("/user/<string:username>")
-def user_accounts(username):
-    user = User.query.filter_by(username = username).first_or_404()
-    return render_template('profile.html', user = user)
+# def send_reset_email(user):
+#     token = user.get_reset_token()
+#     message = Message('Password Reset Request', sender='ngorbunova41654@gmail.com', recipients=[user.email])
+#     message.body = f'''To reset your password,visin the followink link:
+# {url_for('reset_token', token = token, _external = True)}
+
+# If you did not make this request then simply ignore this email and no changes will be made.
+# '''
+#     mail.send(message)
 
 
-def send_reset_email(user):
-    token = user.get_reset_token()
-    message = Message('Password Reset Request', sender='ngorbunova41654@gmail.com', recipients=[user.email])
-    message.body = f'''To reset your password,visin the followink link:
-{url_for('reset_token', token = token, _external = True)}
-
-If you did not make this request then simply ignore this email and no changes will be made.
-'''
-    mail.send(message)
-
-
-@app.route("/reset_password", methods = ['POST', 'GET'])
-def reset_request():
-    if current_user.is_authenticated:
-        return redirect(url_for('shop'))
-    form = RequestResetForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(email = form.email.data).first()
-        send_reset_email(user)
-        flash('An email ha been sent with instructions to reset you password', 'info')
-        return redirect(url_for('login'))
-    return render_template('reset_request.html', title = 'Reset Password', form_reset_request = form)
+# @app.route("/reset_password", methods = ['POST', 'GET'])
+# def reset_request():
+#     if current_user.is_authenticated:
+#         return redirect(url_for('shop'))
+#     form = RequestResetForm()
+#     if form.validate_on_submit():
+#         user = User.query.filter_by(email = form.email.data).first()
+#         send_reset_email(user)
+#         flash('An email ha been sent with instructions to reset you password', 'info')
+#         return redirect(url_for('login'))
+#     return render_template('reset_request.html', title = 'Reset Password', form_reset_request = form)
 
 
-@app.route("/reset_password/<token>", methods = ['POST', 'GET'])
-def reset_token(token):
-    if current_user.is_authenticated:
-        return redirect(url_for('shop'))
-    user = User.verify_reset_token(token)
-    if user is None:
-        flash('That is an invalid or expired token')
-        return redirect(url_for('reset_request'))
-    form = ResetPasswordForm()
-    if form.validate_on_submit():
-        user.set_password(form.password.data)
-        user.past_passwrod_check(form.password.data)
-        db.session.commit()
-        return redirect(url_for('login'))
-    return render_template('reset_token.html', title = 'Reset Password', form_reset_token = form)
+# @app.route("/reset_password/<token>", methods = ['POST', 'GET'])
+# def reset_token(token):
+#     if current_user.is_authenticated:
+#         return redirect(url_for('shop'))
+#     user = User.verify_reset_token(token)
+#     if user is None:
+#         flash('That is an invalid or expired token')
+#         return redirect(url_for('reset_request'))
+#     form = ResetPasswordForm()
+#     if form.validate_on_submit():
+#         user.set_password(form.password.data)
+#         user.past_passwrod_check(form.password.data)
+#         db.session.commit()
+#         return redirect(url_for('login'))
+#     return render_template('reset_token.html', title = 'Reset Password', form_reset_token = form)
 
 
 if __name__ == '__main__':

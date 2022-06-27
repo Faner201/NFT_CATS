@@ -10,14 +10,14 @@
 
     let auth = async () => {
         if (error == "") {
-            const responce = authProfile(form);
+            const responce = await authProfile(form);
             const { answer } = await responce.json();
             if (answer === "loginError") {
                 error = "User with this name does not exist!";
             } else if (answer === "passwordError") {
                 error = "Wrong password!";
-            } else if (answer === "done") {
-                $account = login;
+            } else {
+                $account = answer;
                 navigate("/");
             }
         }

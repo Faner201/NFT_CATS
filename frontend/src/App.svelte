@@ -19,7 +19,7 @@
         <Route path="/reg" component={RegPage} />
         <Route path="/auth" component={AuthPage} />
         <Route path="/upload" component={UploadPage} />
-        <Route path="/profile" component={ProfilePage} />
+        <Route path="/profile/:id" component={ProfilePage} />
         <Route path="/store/:id" component={ProductPage} />
     </main>
     <Footer/>
