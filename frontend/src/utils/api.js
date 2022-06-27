@@ -1,4 +1,4 @@
-const API_HOST = "https://mysterious-basin-29452.herokuapp.com/";
+const API_HOST = "http://127.0.0.1:5000";
 
 export function getProductData(id) {
     return fetch(`${API_HOST}/store/id=${id}`);
