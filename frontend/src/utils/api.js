@@ -16,6 +16,17 @@ export function getImage(path) {
     return API_HOST + path;
 }
 
+export function buyProduct(id, profile) {
+    return fetch(`${API_HOST}/buy`, {
+        method: 'POST', 
+        headers: { 'Content-Type' : 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            profile: profile
+        })
+    });
+}
+
 export function regProfile(form) {
     return fetch(`${API_HOST}/registration`, {
         method: 'POST', 
