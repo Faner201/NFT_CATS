@@ -28,7 +28,6 @@
                 <div class="subtitle">Backend:</div>
                 <p>Flask</p>
                 <p>MySQL</p>
-                <p>Web3</p>
             </div>
         </div>
     </div>

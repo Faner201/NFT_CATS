@@ -42,6 +42,7 @@
         flex-direction: row;
         align-items: center;
         padding: 20px;
+        gap: 10px;
     }
 
     .name {
@@ -61,5 +62,6 @@
         flex-wrap: wrap;
         justify-content: center;
         gap: 30px;
+        margin: 20px 0px 60px 0px;
     }
 </style>
