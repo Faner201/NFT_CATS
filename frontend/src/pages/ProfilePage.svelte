@@ -1,6 +1,6 @@
 <script>
     import { onMount } from "svelte/internal";
-    import { account } from "../stores/stores";
+    import { profile } from "../stores/stores";
     import { getProfileData, getImage } from "../utils/api";
     import ProductCard from "../components/ProductCard.svelte";
 
@@ -9,7 +9,7 @@
     };
 
     onMount(async () => {
-        getProfileData($account)
+        getProfileData($profile)
             .then(response => response.json())
             .then(json => user = json);
     });
