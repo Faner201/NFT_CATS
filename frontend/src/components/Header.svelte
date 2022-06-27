@@ -9,7 +9,7 @@
     };
 
     let accountAction = () => {
-        navigate($account != undefined ? "/account" : "/auth");
+        navigate($account != undefined ? `/profile/id=${$account}` : "/auth");
     };
 </script>
 

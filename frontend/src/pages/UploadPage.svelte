@@ -2,6 +2,7 @@
     import Button from "../components/Button.svelte";
     import { navigate } from "svelte-routing";
     import { uploadProduct } from "../utils/api.js";
+    import { account } from "../stores/stores.js";
 
     let form = {};
     let files = [];
@@ -14,11 +15,12 @@
 
     let upload = async () => {
         form.image = files[0];
+        form.author = $account;
         let formData = new FormData();
         for (let property in form) 
             formData.append(property, form[property]);
 
-        const responce = await uploadProduct(form)
+        const responce = await uploadProduct(formData)
         const { answer } = await responce.json();
         if (answer === "nameError") {
             error = "Wrong name!";

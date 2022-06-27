@@ -11,7 +11,16 @@
         const offset = 1400;
         let scrollY = listElement.offsetTop + listElement.clientHeight;
         if (scrollY < window.scrollY + offset && products.length < maxCount) {
-            products = [...products, products.length]
+            products = [...products, products.length + 1];
+        }
+    }
+
+    function addCards() {
+        for (let i = 0; i < 6; i++)
+        {
+            if (products.length < maxCount) {
+                products = [...products, products.length + 1];
+            }
         }
     }
 
@@ -20,9 +29,7 @@
             .then(response => response.json())
             .then(json => maxCount = json.count)
             .catch(() => maxCount = 6); 
-        
-        for (let i = 0; i < 6; i++)
-            addCardWithScroll();
+        await addCards()
         
         window.addEventListener("scroll", addCardWithScroll);
     });
