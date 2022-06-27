@@ -16,7 +16,7 @@
 
     let buy = async () => {
         buyProduct(id, $account);
-        navigate("/profile");
+        navigate(`/profile/id=${$account}`);
     };
 </script>
 

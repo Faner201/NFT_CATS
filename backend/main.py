@@ -1,4 +1,4 @@
-from flask import redirect, render_template, request, url_for, jsonify
+from flask import redirect, render_template, request, session, url_for, jsonify
 from flask_login import logout_user
 from models import User, NFT, photo_processing
 from App import app, db, login_manager
@@ -35,7 +35,7 @@ def default_image():
 @app.route("/registration", methods = ['POST'])
 def json_register():
     request_data = request.get_json()
-    new_user = User(email = request_data['email'], username = request_data['login'], img_name = default_image())
+    new_user = User(email = request_data['email'], username = request_data['login'])
     new_user.set_password(request_data['password'])
     new_user.check_password(request_data['repeatPassword'])
     if(User.query.filter_by(username = request_data['login']).first() is not None):
@@ -83,10 +83,20 @@ def shop_count():
     return jsonify({"count" : nfts})
 
 
-@app.route("/logout")
-def logout():
-    logout_user()
-    return redirect(url_for('home'))
+# @app.route("/logout")
+# def logout():
+#     logout_user()
+#     return redirect(url_for('home'))
+
+
+@app.route("/buy", methods = ['POST'])
+def buy():
+    request_data = request.get_json()
+    nft = NFT.query.get(request_data["id"])
+    nft.authorName_id = request_data["profile"]
+    db.session.flush()
+    db.session.commit()
+    return jsonify({"answer" : "done"})
 
 
 @app.route("/settings", methods = ['POST','GET'])
