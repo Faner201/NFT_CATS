@@ -1,7 +1,7 @@
 <script>
     import { onMount } from "svelte/internal";
     import { navigate } from "svelte-routing";
-    import { account } from "../stores/stores";
+    import { account, profile } from "../stores/stores";
     import { getProductData, getImage, buyProduct } from "../utils/api";
     import Button from "../components/Button.svelte";
 
@@ -16,7 +16,8 @@
 
     let buy = async () => {
         buyProduct(id, $account);
-        navigate(`/profile/id=${$account}`);
+        $profile = product.authorId
+        navigate(`/profile/id=${$profile}`);
     };
 </script>
 
