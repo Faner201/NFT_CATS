@@ -32,7 +32,7 @@
 <style>
     .container {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
     }
@@ -46,13 +46,13 @@
 
     .name {
         color: var(--color-neutral-6);
-        font-size: 24px;
+        font-size: 32px;
         font-weight: 700;
     }
 
     img {
-        height: 50px;
-        width: 50px;
+        height: 80px;
+        width: 80px;
     }
 
     .product-list {
