@@ -1,4 +1,4 @@
-const API_HOST = "http://62.113.109.80";
+const API_HOST = "http://62.113.109.80:5000";
 
 export function getProductData(id) {
     return fetch(`${API_HOST}/store/id=${id}`);
